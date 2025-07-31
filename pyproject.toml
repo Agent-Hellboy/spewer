@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spewer"
+version = "0.1.0"
+description = "A Python debugging library for detailed code execution tracing"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Prince Roshan", email = "princekrroshan01@gmail.com"}
+]
+maintainers = [
+    {name = "Prince Roshan", email = "princekrroshan01@gmail.com"}
+]
+keywords = ["debugging", "tracing", "development", "debug", "trace"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Agent-Hellboy/spewer"
+Documentation = "https://github.com/Agent-Hellboy/spewer#readme"
+Repository = "https://github.com/Agent-Hellboy/spewer"
+"Bug Tracker" = "https://github.com/Agent-Hellboy/spewer/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "flake8>=3.8",
+    "mypy>=0.800",
+]
+
+[tool.setuptools]
+py-modules = ["spewer"]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true 
