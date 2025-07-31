@@ -41,20 +41,20 @@ Repository = "https://github.com/Agent-Hellboy/spewer"
 dev = [
     "pytest>=6.0",
     "pytest-cov>=2.0",
-    "black>=21.0",
-    "flake8>=3.8",
-    "mypy>=0.800",
+    "ruff>=0.12.7"
 ]
 
 [tool.setuptools]
 py-modules = ["spewer"]
 
-[tool.black]
-line-length = 88
-target-version = ['py39']
 
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true 
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ICN", "INP", "ISC", "NPY", "PIE", "PYI", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "NPY", "AIR", "PERF", "FURB", "LOG", "RUF"]
+ignore = ["E501", "E203", "ARG002", "PERF203", "PLR2004", "PYI056", "UP007", "UP037", "UP045", "W293"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"] 
