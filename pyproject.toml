@@ -45,8 +45,8 @@ dev = [
     "ruff>=0.12.7"
 ]
 
-[tool.setuptools]
-py-modules = ["spewer"]
+[tool.setuptools.packages.find]
+where = ["."]
 
 
 [tool.ruff]
