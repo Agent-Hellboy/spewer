@@ -39,6 +39,24 @@ class TestSpewer:
         result = spewer(frame, "line", None)
         assert result is spewer
 
+    def test_spewer_call_with_function_event(self):
+        """Test Spewer __call__ method with function event."""
+        spewer = Spewer(show_values=True, functions_only=True)
+
+        # Create a mock frame
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 20
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_locals = {"arg1": 42, "arg2": "hello"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        result = spewer(frame, "call", None)
+        assert result is spewer
+
     def test_spewer_call_with_other_event(self):
         """Test Spewer __call__ method with non-line event."""
         spewer = Spewer()
