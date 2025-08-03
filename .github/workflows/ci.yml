@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Test (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         include:
@@ -23,6 +23,8 @@ jobs:
             toxenv: py312
           - python-version: "3.13"
             toxenv: py313
+          - python-version: "3.14.0-rc.1"
+            toxenv: py314
 
     steps:
       - name: Checkout code
@@ -32,6 +34,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
 
       - name: Install tox
         run: |
@@ -52,7 +55,7 @@ jobs:
 
   quality:
     name: Code Quality & Security
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: test
 
     steps:
