@@ -3,7 +3,7 @@
 [![CI](https://github.com/Agent-Hellboy/spewer/actions/workflows/ci.yml/badge.svg)](https://github.com/Agent-Hellboy/spewer/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Agent-Hellboy/spewer/graph/badge.svg?token=O54FUXGQDM)](https://codecov.io/gh/Agent-Hellboy/spewer)
 [![PyPI - Version](https://img.shields.io/pypi/v/spewer.svg)](https://pypi.org/project/spewer/)
-
+[![PyPI Downloads](https://static.pepy.tech/badge/spewer)](https://pepy.tech/projects/spewer)
 
 A Python debugging library for detailed code execution tracing. This library provides utilities for tracing Python code execution with detailed information about variables, function calls, and execution flow.
 
