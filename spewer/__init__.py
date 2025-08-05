@@ -13,8 +13,8 @@ Copyright (c) 2009-2015 Paul J. Davis <paul.joseph.davis@gmail.com>
 """
 
 from .config import SpewConfig
-from .spewer import SpewContext, Spewer, spew, unspew
+from .spewer import SpewContext, spew, unspew
 from .trace import TraceHook
 
 __version__ = "0.1.0"
-__all__ = ["SpewConfig", "SpewContext", "Spewer", "TraceHook", "spew", "unspew"]
+__all__ = ["SpewConfig", "SpewContext", "TraceHook", "spew", "unspew"]

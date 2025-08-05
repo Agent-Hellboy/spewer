@@ -9,28 +9,6 @@ from .config import SpewConfig
 from .trace import TraceHook
 
 
-class Spewer:
-    """A trace hook class that provides detailed debugging information."""
-
-    def __init__(
-        self,
-        trace_names: Optional[list[str]] = None,
-        show_values: bool = True,
-        functions_only: bool = False,
-    ):
-        """Initialize the Spewer."""
-        config = SpewConfig(
-            trace_names=trace_names,
-            show_values=show_values,
-            functions_only=functions_only,
-        )
-        self.trace_hook = TraceHook(config)
-
-    def __call__(self, frame, event, arg):
-        """Delegate to the trace hook."""
-        return self.trace_hook(frame, event, arg)
-
-
 def spew(
     trace_names: Optional[list[str]] = None,
     show_values: bool = False,

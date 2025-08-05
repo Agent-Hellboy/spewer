@@ -5,25 +5,58 @@ import pytest
 from spewer import SpewConfig, SpewContext, TraceHook, spew, unspew
 
 
-class TestSpewer:
-    """Test cases for the Spewer class."""
+class TestSpewConfig:
+    """Test cases for the SpewConfig class."""
 
-    def test_spewer_initialization(self):
-        """Test Spewer initialization."""
-        spewer = TraceHook(SpewConfig())
-        assert spewer.config.trace_names is None
-        assert spewer.config.show_values is True
+    def test_spew_config_initialization(self):
+        """Test SpewConfig initialization."""
+        config = SpewConfig()
+        assert config.trace_names is None
+        assert config.show_values is True
+        assert config.functions_only is False
 
-    def test_spewer_with_trace_names(self):
-        """Test Spewer with specific trace names."""
+    def test_spew_config_with_trace_names(self):
+        """Test SpewConfig with specific trace names."""
         trace_names = ["test_module"]
-        spewer = TraceHook(SpewConfig(trace_names=trace_names, show_values=False))
-        assert spewer.config.trace_names == trace_names
-        assert spewer.config.show_values is False
+        config = SpewConfig(trace_names=trace_names, show_values=False)
+        assert config.trace_names == trace_names
+        assert config.show_values is False
 
-    def test_spewer_call_with_line_event(self):
-        """Test Spewer __call__ method with line event."""
-        spewer = TraceHook(SpewConfig(show_values=False))
+    def test_spew_config_with_invalid_trace_names(self):
+        """Test SpewConfig with invalid trace names."""
+        with pytest.raises(TypeError):
+            SpewConfig(trace_names=1)
+
+    def test_spew_config_with_invalid_show_values(self):
+        """Test SpewConfig with invalid show_values."""
+        with pytest.raises(TypeError):
+            SpewConfig(show_values="invalid")
+
+    def test_spew_config_with_invalid_functions_only(self):
+        """Test SpewConfig with invalid functions_only."""
+        with pytest.raises(TypeError):
+            SpewConfig(functions_only="invalid")
+
+
+class TestTraceHook:
+    """Test cases for the TraceHook class."""
+
+    def test_trace_hook_initialization(self):
+        """Test TraceHook initialization."""
+        hook = TraceHook(SpewConfig())
+        assert hook.config.trace_names is None
+        assert hook.config.show_values is True
+
+    def test_trace_hook_with_trace_names(self):
+        """Test TraceHook with specific trace names."""
+        trace_names = ["test_module"]
+        hook = TraceHook(SpewConfig(trace_names=trace_names, show_values=False))
+        assert hook.config.trace_names == trace_names
+        assert hook.config.show_values is False
+
+    def test_trace_hook_call_with_line_event(self):
+        """Test TraceHook __call__ method with line event."""
+        hook = TraceHook(SpewConfig(show_values=False))
 
         # Create a mock frame
         class MockFrame:
@@ -36,12 +69,12 @@ class TestSpewer:
                 )()
 
         frame = MockFrame()
-        result = spewer(frame, "line", None)
-        assert result is spewer
+        result = hook(frame, "line", None)
+        assert result is hook
 
-    def test_spewer_call_with_function_event(self):
-        """Test Spewer __call__ method with function event."""
-        spewer = TraceHook(SpewConfig(show_values=True, functions_only=True))
+    def test_trace_hook_call_with_function_event(self):
+        """Test TraceHook __call__ method with function event."""
+        hook = TraceHook(SpewConfig(show_values=True, functions_only=True))
 
         # Create a mock frame
         class MockFrame:
@@ -54,21 +87,98 @@ class TestSpewer:
                 )()
 
         frame = MockFrame()
-        result = spewer(frame, "call", None)
-        assert result is spewer
+        result = hook(frame, "call", None)
+        assert result is hook
 
-    def test_spewer_call_with_other_event(self):
-        """Test Spewer __call__ method with non-line event."""
-        spewer = TraceHook(SpewConfig())
+    def test_trace_hook_call_with_other_event(self):
+        """Test TraceHook __call__ method with non-line event."""
+        hook = TraceHook(SpewConfig())
         frame = type("MockFrame", (), {})()
-        result = spewer(frame, "call", None)
-        assert result is spewer
+        result = hook(frame, "call", None)
+        assert result is hook
+
+    def test_show_variable_values(self):
+        """Test _show_variable_values method."""
+        hook = TraceHook(SpewConfig(show_values=True))
+
+        # Create a mock frame with variables
+        class MockFrame:
+            def __init__(self):
+                self.f_globals = {"global_var": "global_value"}
+                self.f_locals = {"local_var": 42, "x": 10, "y": 20}
+
+        frame = MockFrame()
+        line = "result = x + y"
+
+        # Test that variable values are extracted correctly
+        hook._show_variable_values(frame, line)
+        # This should print: x=10 y=20
+
+    def test_show_variable_values_with_problematic_objects(self):
+        """Test _show_variable_values with problematic objects."""
+        hook = TraceHook(SpewConfig(show_values=True))
+
+        # Create a mock frame with problematic objects
+        class ProblematicObject:
+            def __repr__(self):
+                msg = "Infinite recursion"
+                raise RecursionError(msg)
+
+        class MockFrame:
+            def __init__(self):
+                self.f_globals = {}
+                self.f_locals = {"problematic": ProblematicObject()}
+
+        frame = MockFrame()
+        line = "x = problematic"
+
+        # This should not raise an exception
+        hook._show_variable_values(frame, line)
+
+    def test_show_function_args(self):
+        """Test _show_function_args method."""
+        hook = TraceHook(SpewConfig(show_values=True))
+
+        # Create a mock frame with function arguments
+        class MockFrame:
+            def __init__(self):
+                self.f_locals = {
+                    "x": 10,
+                    "y": "hello",
+                    "__builtins__": "builtins",  # Should be ignored
+                    "arg1": 42,
+                }
+
+        frame = MockFrame()
+
+        # Test that function arguments are extracted correctly
+        hook._show_function_args(frame)
+        # This should print: x=10 y='hello' arg1=42
+
+    def test_show_function_args_with_problematic_objects(self):
+        """Test _show_function_args with problematic objects."""
+        hook = TraceHook(SpewConfig(show_values=True))
+
+        # Create a mock frame with problematic objects
+        class ProblematicObject:
+            def __repr__(self):
+                msg = "Cannot represent"
+                raise TypeError(msg)
+
+        class MockFrame:
+            def __init__(self):
+                self.f_locals = {"normal": "value", "problematic": ProblematicObject()}
+
+        frame = MockFrame()
+
+        # This should not raise an exception
+        hook._show_function_args(frame)
 
 
-class TestSpewFunctions:
-    """Test cases for spew and unspew functions."""
+class TestSpewContext:
+    """Test cases for SpewContext class."""
 
-    def test_spew_and_unspew(self):
+    def test_spew_context_initialization(self):
         """Test spew and unspew functions."""
         # Test that unspew doesn't raise an error
         unspew()
@@ -99,12 +209,20 @@ class TestIntegration:
             y = 20
             return x + y
 
+    def test_basic_tracing_with_context_manager(self):
+        """Test basic tracing functionality with context manager."""
+
+        def test_function():
+            x = 10
+            y = 20
+            return x + y
+
         # Test with context manager
         with SpewContext(show_values=False):
             result = test_function()
             assert result == 30
 
-    def test_module_filtering(self):
+    def test_module_filtering_with_context_manager(self):
         """Test module filtering functionality."""
 
         def test_function():

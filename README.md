@@ -140,14 +140,7 @@ Remove the trace hook installed by `spew()`.
 
 ### Classes
 
-#### `Spewer(trace_names=None, show_values=True, functions_only=False)`
 
-A trace hook class that provides detailed debugging information.
-
-**Parameters:**
-- `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
-- `show_values` (bool): Whether to show variable values during tracing.
-- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
 
 #### `SpewContext(trace_names=None, show_values=False, functions_only=False)`
 
