@@ -7,7 +7,7 @@ import linecache
 import re
 from typing import Any
 
-from .config import SpewConfig  # noqa: TCH001
+from .config import SpewConfig  # noqa: TC001
 
 _token_splitter = re.compile(r"\W+")
 
