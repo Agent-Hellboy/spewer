@@ -1,5 +1,7 @@
 """Tests for the spewer library."""
 
+import inspect
+
 import pytest
 
 from spewer import SpewConfig, SpewContext, TraceHook, spew, unspew
@@ -173,6 +175,60 @@ class TestTraceHook:
 
         # This should not raise an exception
         hook._show_function_args(frame)
+
+    def test_handle_line_execution_with_unknown_file(self):
+        """Test _handle_line_execution with unknown file."""
+        hook = TraceHook(SpewConfig(show_values=False))
+
+        # Create a mock frame without __file__
+        class MockCode:
+            def __init__(self):
+                self.co_name = "unknown_func"
+                self.co_lasti = 5
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {}  # No __file__ key
+                self.f_code = MockCode()
+                self.f_lasti = 5
+
+        frame = MockFrame()
+
+        # Mock inspect.getsourcelines to raise OSError
+        original_getsourcelines = inspect.getsourcelines
+        try:
+            inspect.getsourcelines = lambda _: (_ for _ in ()).throw(
+                OSError("File not found")
+            )
+
+            # This should handle the OSError gracefully
+            hook._handle_line_execution(frame)
+        finally:
+            inspect.getsourcelines = original_getsourcelines
+
+    def test_handle_function_call_with_unknown_file(self):
+        """Test _handle_function_call with unknown file."""
+        hook = TraceHook(SpewConfig(show_values=True))
+
+        # Create a mock frame without __file__
+        class MockCode:
+            def __init__(self):
+                self.co_name = "unknown_func"
+                self.co_lasti = 5
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 20
+                self.f_globals = {}  # No __file__ key
+                self.f_locals = {"x": 10, "y": 20}
+                self.f_code = MockCode()
+                self.f_lasti = 5
+
+        frame = MockFrame()
+
+        # This should handle the unknown file case gracefully
+        hook._handle_function_call(frame)
 
 
 class TestSpewContext:
