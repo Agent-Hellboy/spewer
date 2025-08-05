@@ -207,6 +207,40 @@ class TestTraceHook:
         finally:
             inspect.getsourcelines = original_getsourcelines
 
+    def test_tracehook_with_pyc_file(self):
+        """Test TraceHook with a .pyc file."""
+        hook = TraceHook(SpewConfig(show_values=False))
+
+        # Create a mock frame with a .pyc file
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.pyc", "__name__": "test"}
+                self.f_locals = {}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        hook._handle_line_execution(frame)
+
+    def test_tracehook_with_pyo_file(self):
+        """Test TraceHook with a .pyo file."""
+        hook = TraceHook(SpewConfig(show_values=False))
+
+        # Create a mock frame with a .pyo file
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.pyo", "__name__": "test"}
+                self.f_locals = {}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        hook._handle_line_execution(frame)
+
     def test_handle_function_call_with_unknown_file(self):
         """Test _handle_function_call with unknown file."""
         hook = TraceHook(SpewConfig(show_values=True))
