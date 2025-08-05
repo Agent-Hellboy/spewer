@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spewer"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Python debugging library for detailed code execution tracing"
 readme = "README.md"
 license = "MIT"
@@ -42,7 +42,8 @@ Repository = "https://github.com/Agent-Hellboy/spewer"
 dev = [
     "pytest>=6.0",
     "pytest-cov>=2.0",
-    "ruff>=0.12.7"
+    "ruff>=0.12.7",
+    "pre-commit>=3.0.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -54,8 +55,8 @@ target-version = "py39"
 line-length = 88
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ICN", "INP", "ISC", "NPY", "PIE", "PYI", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "NPY", "AIR", "PERF", "FURB", "LOG", "RUF"]
-ignore = ["E501", "E203", "ARG002", "PERF203", "PLR2004", "PYI056", "UP007", "UP037", "UP045", "W293"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ICN", "INP", "NPY", "PIE", "PYI", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "NPY", "AIR", "PERF", "LOG", "RUF"]
+ignore = ["E501", "E203", "ARG002", "PERF203", "PLR2004", "PYI056", "UP007", "UP037", "W293"]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"] 
+"__init__.py" = ["F401"]

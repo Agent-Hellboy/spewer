@@ -67,7 +67,7 @@ with SpewContext(show_values=True):
         x = 10
         y = 20
         return x + y
-    
+
     result = my_function()
 ```
 
@@ -97,7 +97,7 @@ with SpewContext(show_values=False):
         x = 10
         y = 20
         return x + y
-    
+
     result = my_function()
 ```
 
@@ -111,7 +111,7 @@ with SpewContext(functions_only=True, show_values=True):
     def my_function(x, y):
         result = x + y
         return result
-    
+
     result = my_function(10, 20)
 ```
 
@@ -125,7 +125,7 @@ __main__:15: my_function()
 
 ### Functions
 
-#### `spew(trace_names=None, show_values=False, functions_only=False, debug_mode=False)`
+#### `spew(trace_names=None, show_values=False, functions_only=False)`
 
 Install a trace hook which writes detailed logs about code execution.
 
@@ -133,7 +133,6 @@ Install a trace hook which writes detailed logs about code execution.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
-- `debug_mode` (bool): Whether to show debug information about trace events.
 
 #### `unspew()`
 
@@ -141,7 +140,7 @@ Remove the trace hook installed by `spew()`.
 
 ### Classes
 
-#### `Spewer(trace_names=None, show_values=True, functions_only=False, debug_mode=False)`
+#### `Spewer(trace_names=None, show_values=True, functions_only=False)`
 
 A trace hook class that provides detailed debugging information.
 
@@ -149,9 +148,8 @@ A trace hook class that provides detailed debugging information.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
-- `debug_mode` (bool): Whether to show debug information about trace events.
 
-#### `SpewContext(trace_names=None, show_values=False, functions_only=False, debug_mode=False)`
+#### `SpewContext(trace_names=None, show_values=False, functions_only=False)`
 
 Context manager for automatic spew/unspew operations.
 
@@ -159,9 +157,8 @@ Context manager for automatic spew/unspew operations.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
-- `debug_mode` (bool): Whether to show debug information about trace events.
 
-#### `SpewConfig(trace_names=None, show_values=True, functions_only=False, debug_mode=False)`
+#### `SpewConfig(trace_names=None, show_values=True, functions_only=False)`
 
 Configuration class for spewer debugging. Provides validation and centralized configuration management.
 
@@ -169,7 +166,6 @@ Configuration class for spewer debugging. Provides validation and centralized co
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
-- `debug_mode` (bool): Whether to show debug information about trace events.
 
 #### `TraceHook(config)`
 
@@ -216,4 +212,37 @@ This project builds upon the excellent debugging utilities from the Gunicorn web
 
 The original Gunicorn debug module can be found at: https://github.com/benoitc/gunicorn/blob/master/gunicorn/debug.py
 
-**Future Enhancements**: We plan to further enhance this library with additional features to improve usability, including more output formats, advanced filtering options, and better integration with existing debugging workflows. 
+**Future Enhancements**: We plan to further enhance this library with additional features to improve usability, including more output formats, advanced filtering options, and better integration with existing debugging workflows.
+
+## Development
+
+### Setting up the development environment:
+
+```bash
+git clone https://github.com/Agent-Hellboy/spewer.git
+cd spewer
+python3 -m pip install -e ".[dev]"
+```
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality. The hooks will automatically run on every commit and include:
+
+- **Ruff linting**: Code linting and auto-fixing
+- **Ruff formatting**: Code formatting
+- **File checks**: Trailing whitespace, end-of-file, YAML validation, etc.
+- **Security checks**: Private key detection, merge conflicts, etc.
+
+To install the pre-commit hooks:
+
+```bash
+pre-commit install
+```
+
+To run the hooks manually:
+
+```bash
+pre-commit run --all-files
+```
+
+**Note**: The examples directory is excluded from pre-commit checks to avoid issues with example files.

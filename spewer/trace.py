@@ -5,38 +5,34 @@ from __future__ import annotations
 import inspect
 import linecache
 import re
-import sys
 from typing import Any
 
-from .config import SpewConfig
+from .config import SpewConfig  # noqa: TCH001
 
 _token_splitter = re.compile(r"\W+")
 
 
 class TraceHook:
     """Core trace hook implementation."""
-    
+
     def __init__(self, config: SpewConfig):
         """Initialize the trace hook with configuration."""
         self.config = config
-    
+
     def __call__(self, frame: Any, event: str, arg: Any) -> TraceHook:
         """Trace hook callback that processes execution events."""
-        if self.config.debug_mode:
-            print(f"event: {event}, frame: {frame}, arg: {arg}")
-        
         if self.config.functions_only and event == "call":
             self._handle_function_call(frame)
         elif not self.config.functions_only and event == "line":
             self._handle_line_execution(frame)
-        
+
         return self
-    
+
     def _handle_function_call(self, frame: Any) -> None:
         """Handle function call events."""
         lineno = frame.f_lineno
         func_name = frame.f_code.co_name
-        
+
         # Get filename and handle compiled files
         if "__file__" in frame.f_globals:
             filename = frame.f_globals["__file__"]
@@ -53,7 +49,7 @@ class TraceHook:
 
             if self.config.show_values:
                 self._show_function_args(frame)
-    
+
     def _handle_line_execution(self, frame: Any) -> None:
         """Handle line-by-line execution events."""
         lineno = frame.f_lineno
@@ -81,20 +77,20 @@ class TraceHook:
                 return
 
             self._show_variable_values(frame, line)
-    
+
     def _show_function_args(self, frame: Any) -> None:
         """Show function arguments if available."""
         if frame.f_locals:
             args = []
             for key, value in frame.f_locals.items():
-                if not key.startswith('__'):
+                if not key.startswith("__"):
                     try:
                         args.append(f"{key}={value!r}")
                     except (AttributeError, TypeError, RecursionError):
                         args.append(f"{key}=<{type(value).__name__} object>")
             if args:
                 print(f"\targs: {', '.join(args)}")
-    
+
     def _show_variable_values(self, frame: Any, line: str) -> None:
         """Show variable values for line execution."""
         details = []

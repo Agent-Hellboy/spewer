@@ -2,7 +2,7 @@
 
 import pytest
 
-from spewer.spewer import SpewContext, Spewer, spew, unspew
+from spewer import SpewConfig, SpewContext, TraceHook, spew, unspew
 
 
 class TestSpewer:
@@ -10,20 +10,20 @@ class TestSpewer:
 
     def test_spewer_initialization(self):
         """Test Spewer initialization."""
-        spewer = Spewer()
-        assert spewer.trace_names is None
-        assert spewer.show_values is True
+        spewer = TraceHook(SpewConfig())
+        assert spewer.config.trace_names is None
+        assert spewer.config.show_values is True
 
     def test_spewer_with_trace_names(self):
         """Test Spewer with specific trace names."""
         trace_names = ["test_module"]
-        spewer = Spewer(trace_names=trace_names, show_values=False)
-        assert spewer.trace_names == trace_names
-        assert spewer.show_values is False
+        spewer = TraceHook(SpewConfig(trace_names=trace_names, show_values=False))
+        assert spewer.config.trace_names == trace_names
+        assert spewer.config.show_values is False
 
     def test_spewer_call_with_line_event(self):
         """Test Spewer __call__ method with line event."""
-        spewer = Spewer(show_values=False)
+        spewer = TraceHook(SpewConfig(show_values=False))
 
         # Create a mock frame
         class MockFrame:
@@ -41,7 +41,7 @@ class TestSpewer:
 
     def test_spewer_call_with_function_event(self):
         """Test Spewer __call__ method with function event."""
-        spewer = Spewer(show_values=True, functions_only=True)
+        spewer = TraceHook(SpewConfig(show_values=True, functions_only=True))
 
         # Create a mock frame
         class MockFrame:
@@ -59,7 +59,7 @@ class TestSpewer:
 
     def test_spewer_call_with_other_event(self):
         """Test Spewer __call__ method with non-line event."""
-        spewer = Spewer()
+        spewer = TraceHook(SpewConfig())
         frame = type("MockFrame", (), {})()
         result = spewer(frame, "call", None)
         assert result is spewer
