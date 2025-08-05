@@ -12,7 +12,9 @@ Copyright (c) 2009-2024 Benoît Chesneau <benoitc@gunicorn.org>
 Copyright (c) 2009-2015 Paul J. Davis <paul.joseph.davis@gmail.com>
 """
 
-from .spewer import SpewContext, Spewer, spew, unspew
+from .config import SpewConfig
+from .spewer import SpewContext, spew, unspew
+from .trace import TraceHook
 
 __version__ = "0.1.0"
-__all__ = ["SpewContext", "Spewer", "spew", "unspew"]
+__all__ = ["SpewConfig", "SpewContext", "TraceHook", "spew", "unspew"]
