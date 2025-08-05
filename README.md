@@ -125,7 +125,7 @@ __main__:15: my_function()
 
 ### Functions
 
-#### `spew(trace_names=None, show_values=False, functions_only=False)`
+#### `spew(trace_names=None, show_values=False, functions_only=False, debug_mode=False)`
 
 Install a trace hook which writes detailed logs about code execution.
 
@@ -133,6 +133,7 @@ Install a trace hook which writes detailed logs about code execution.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `debug_mode` (bool): Whether to show debug information about trace events.
 
 #### `unspew()`
 
@@ -140,7 +141,7 @@ Remove the trace hook installed by `spew()`.
 
 ### Classes
 
-#### `Spewer(trace_names=None, show_values=True, functions_only=False)`
+#### `Spewer(trace_names=None, show_values=True, functions_only=False, debug_mode=False)`
 
 A trace hook class that provides detailed debugging information.
 
@@ -148,8 +149,9 @@ A trace hook class that provides detailed debugging information.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `debug_mode` (bool): Whether to show debug information about trace events.
 
-#### `SpewContext(trace_names=None, show_values=False, functions_only=False)`
+#### `SpewContext(trace_names=None, show_values=False, functions_only=False, debug_mode=False)`
 
 Context manager for automatic spew/unspew operations.
 
@@ -157,6 +159,24 @@ Context manager for automatic spew/unspew operations.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `debug_mode` (bool): Whether to show debug information about trace events.
+
+#### `SpewConfig(trace_names=None, show_values=True, functions_only=False, debug_mode=False)`
+
+Configuration class for spewer debugging. Provides validation and centralized configuration management.
+
+**Parameters:**
+- `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
+- `show_values` (bool): Whether to show variable values during tracing.
+- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `debug_mode` (bool): Whether to show debug information about trace events.
+
+#### `TraceHook(config)`
+
+Core trace hook implementation. This is the low-level class that handles the actual tracing logic.
+
+**Parameters:**
+- `config` (SpewConfig): Configuration object for the trace hook.
 
 ## Example Output
 
