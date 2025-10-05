@@ -158,7 +158,7 @@ class TraceHook:
         # Check if we should trace this module
         if self.config.trace_names is None or name in self.config.trace_names:
             if self.config.show_values:
-                exc_type, exc_value, exc_tb = arg
+                exc_type, exc_value, _ = arg
                 print(
                     f"{name}:{lineno}: {func_name}() -> {exc_type.__name__}({exc_value!r})"
                 )
@@ -213,7 +213,7 @@ class TraceHook:
         # Check if we should trace this module
         if self.config.trace_names is None or name in self.config.trace_names:
             if self.config.show_values:
-                exc_type, exc_value, exc_tb = arg
+                exc_type, exc_value, _ = arg
                 print(
                     f"{name}:{lineno}: {line.rstrip()} -> {exc_type.__name__}({exc_value!r})"
                 )
