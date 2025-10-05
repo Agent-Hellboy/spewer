@@ -39,6 +39,38 @@ class TestSpewConfig:
         with pytest.raises(TypeError):
             SpewConfig(functions_only="invalid")
 
+    def test_spew_config_with_trace_returns(self):
+        """Test SpewConfig with trace_returns option."""
+        config = SpewConfig(trace_returns=True)
+        assert config.trace_returns is True
+
+        config = SpewConfig(trace_returns=False)
+        assert config.trace_returns is False
+
+    def test_spew_config_with_trace_exceptions(self):
+        """Test SpewConfig with trace_exceptions option."""
+        config = SpewConfig(trace_exceptions=True)
+        assert config.trace_exceptions is True
+
+        config = SpewConfig(trace_exceptions=False)
+        assert config.trace_exceptions is False
+
+    def test_spew_config_with_invalid_trace_returns(self):
+        """Test SpewConfig with invalid trace_returns."""
+        with pytest.raises(TypeError):
+            SpewConfig(trace_returns="invalid")
+
+    def test_spew_config_with_invalid_trace_exceptions(self):
+        """Test SpewConfig with invalid trace_exceptions."""
+        with pytest.raises(TypeError):
+            SpewConfig(trace_exceptions="invalid")
+
+    def test_spew_config_default_values(self):
+        """Test SpewConfig default values for new options."""
+        config = SpewConfig()
+        assert config.trace_returns is True
+        assert config.trace_exceptions is True
+
 
 class TestTraceHook:
     """Test cases for the TraceHook class."""

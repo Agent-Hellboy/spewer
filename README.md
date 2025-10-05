@@ -11,9 +11,12 @@ A Python debugging library for detailed code execution tracing. This library pro
 
 - **Line-by-line execution tracing**: See exactly which lines are being executed
 - **Function/method call tracing**: Trace only function and method calls without line details
+- **Return event tracing**: Track function return values and completion
+- **Exception event tracing**: Monitor exception raising and handling
 - **Variable value inspection**: View the values of variables at each execution step
 - **Module filtering**: Trace only specific modules or all modules
 - **Context manager support**: Use with `with` statements for automatic cleanup
+- **Configurable tracing**: Control which events to trace (returns, exceptions)
 - **Lightweight**: Minimal overhead and dependencies
 
 Note: Implemented to avoid using pdb manual effort. This is not going to replace pyinstrument, py-spy, and several other performance and profiling debugging tools. This is a simple tool just to counter manual effort of pdb, and it can go deep inside the dependency and print those traces in a basic format which can be done by pyinstrument and other profiling tools as well, but again this is targeting a basic pdb flaw of manual inspection. This is just an inspection tool.
@@ -119,13 +122,78 @@ This will output:
 ```
 __main__:15: my_function()
     args: x=10, y=20
+__main__:17: my_function() -> 30
+```
+
+### Return Event Tracing
+
+```python
+from spewer import SpewContext
+
+# Trace function calls and returns
+with SpewContext(functions_only=True, show_values=True, trace_returns=True):
+    def calculate(x, y):
+        return x * y + 10
+
+    result = calculate(5, 3)
+```
+
+This will output:
+```
+__main__:15: calculate()
+    args: x=5, y=3
+__main__:16: calculate() -> 25
+```
+
+### Exception Event Tracing
+
+```python
+from spewer import SpewContext
+
+# Trace function calls and exceptions
+with SpewContext(functions_only=True, show_values=True, trace_exceptions=True):
+    def risky_function(x, y):
+        if y == 0:
+            raise ValueError("Cannot divide by zero")
+        return x / y
+
+    try:
+        result = risky_function(10, 0)
+    except ValueError as e:
+        print(f"Caught: {e}")
+```
+
+This will output:
+```
+__main__:15: risky_function()
+    args: x=10, y=0
+__main__:16: risky_function() -> ValueError('Cannot divide by zero')
+```
+
+### Disable Specific Event Types
+
+```python
+from spewer import SpewContext
+
+# Only trace function calls, not returns or exceptions
+with SpewContext(functions_only=True, trace_returns=False, trace_exceptions=False):
+    def my_function():
+        return 42
+
+    result = my_function()
+```
+
+This will output:
+```
+__main__:15: my_function()
+# No return event traced
 ```
 
 ## API Reference
 
 ### Functions
 
-#### `spew(trace_names=None, show_values=False, functions_only=False)`
+#### `spew(trace_names=None, show_values=False, functions_only=False, trace_returns=True, trace_exceptions=True)`
 
 Install a trace hook which writes detailed logs about code execution.
 
@@ -133,6 +201,8 @@ Install a trace hook which writes detailed logs about code execution.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `trace_returns` (bool): Whether to trace function return events. Default: True.
+- `trace_exceptions` (bool): Whether to trace exception events. Default: True.
 
 #### `unspew()`
 
@@ -142,7 +212,7 @@ Remove the trace hook installed by `spew()`.
 
 
 
-#### `SpewContext(trace_names=None, show_values=False, functions_only=False)`
+#### `SpewContext(trace_names=None, show_values=False, functions_only=False, trace_returns=True, trace_exceptions=True)`
 
 Context manager for automatic spew/unspew operations.
 
@@ -150,8 +220,10 @@ Context manager for automatic spew/unspew operations.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `trace_returns` (bool): Whether to trace function return events. Default: True.
+- `trace_exceptions` (bool): Whether to trace exception events. Default: True.
 
-#### `SpewConfig(trace_names=None, show_values=True, functions_only=False)`
+#### `SpewConfig(trace_names=None, show_values=True, functions_only=False, trace_returns=True, trace_exceptions=True)`
 
 Configuration class for spewer debugging. Provides validation and centralized configuration management.
 
@@ -159,6 +231,8 @@ Configuration class for spewer debugging. Provides validation and centralized co
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `trace_returns` (bool): Whether to trace function return events. Default: True.
+- `trace_exceptions` (bool): Whether to trace exception events. Default: True.
 
 #### `TraceHook(config)`
 
@@ -168,6 +242,8 @@ Core trace hook implementation. This is the low-level class that handles the act
 - `config` (SpewConfig): Configuration object for the trace hook.
 
 ## Example Output
+
+### Line-by-Line Tracing
 
 When tracing with `show_values=True`, you'll see output like:
 
@@ -180,6 +256,20 @@ __main__:17: result = x + y
     x=10 y=20 result=30
 __main__:18: print(f"Result: {result}")
     result=30
+```
+
+### Function-Only Tracing with Returns and Exceptions
+
+When tracing with `functions_only=True, show_values=True, trace_returns=True, trace_exceptions=True`:
+
+```
+__main__:15: calculate()
+    args: x=10, y=5
+__main__:16: calculate() -> 15
+
+__main__:20: risky_function()
+    args: x=10, y=0
+__main__:22: risky_function() -> ValueError('division by zero')
 ```
 
 ## Notes

@@ -28,13 +28,12 @@ class TraceHook:
                 self._handle_function_return(frame, arg)
             elif event == "exception" and self.config.trace_exceptions:
                 self._handle_function_exception(frame, arg)
-        else:
-            if event == "line":
-                self._handle_line_execution(frame)
-            elif event == "return" and self.config.trace_returns:
-                self._handle_line_return(frame, arg)
-            elif event == "exception" and self.config.trace_exceptions:
-                self._handle_line_exception(frame, arg)
+        elif event == "line":
+            self._handle_line_execution(frame)
+        elif event == "return" and self.config.trace_returns:
+            self._handle_line_return(frame, arg)
+        elif event == "exception" and self.config.trace_exceptions:
+            self._handle_line_exception(frame, arg)
 
         return self
 
@@ -160,7 +159,9 @@ class TraceHook:
         if self.config.trace_names is None or name in self.config.trace_names:
             if self.config.show_values:
                 exc_type, exc_value, exc_tb = arg
-                print(f"{name}:{lineno}: {func_name}() -> {exc_type.__name__}({exc_value!r})")
+                print(
+                    f"{name}:{lineno}: {func_name}() -> {exc_type.__name__}({exc_value!r})"
+                )
             else:
                 print(f"{name}:{lineno}: {func_name}() -> <exception>")
 
@@ -213,6 +214,8 @@ class TraceHook:
         if self.config.trace_names is None or name in self.config.trace_names:
             if self.config.show_values:
                 exc_type, exc_value, exc_tb = arg
-                print(f"{name}:{lineno}: {line.rstrip()} -> {exc_type.__name__}({exc_value!r})")
+                print(
+                    f"{name}:{lineno}: {line.rstrip()} -> {exc_type.__name__}({exc_value!r})"
+                )
             else:
                 print(f"{name}:{lineno}: {line.rstrip()} -> <exception>")
