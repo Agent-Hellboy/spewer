@@ -68,8 +68,8 @@ class TestSpewConfig:
     def test_spew_config_default_values(self):
         """Test SpewConfig default values for new options."""
         config = SpewConfig()
-        assert config.trace_returns is True
-        assert config.trace_exceptions is True
+        assert config.trace_returns is False
+        assert config.trace_exceptions is False
 
 
 class TestTraceHook:

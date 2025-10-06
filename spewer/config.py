@@ -13,8 +13,8 @@ class SpewConfig:
     trace_names: Optional[list[str]] = None
     show_values: bool = True
     functions_only: bool = False
-    trace_returns: bool = True
-    trace_exceptions: bool = True
+    trace_returns: bool = False
+    trace_exceptions: bool = False
 
     def __post_init__(self):
         """Validate configuration after initialization."""

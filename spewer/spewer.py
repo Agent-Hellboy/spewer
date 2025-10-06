@@ -40,8 +40,8 @@ class SpewContext:
         trace_names: Optional[list[str]] = None,
         show_values: bool = False,
         functions_only: bool = False,
-        trace_returns: bool = True,
-        trace_exceptions: bool = True,
+        trace_returns: bool = False,
+        trace_exceptions: bool = False,
     ):
         self.config = SpewConfig(
             trace_names=trace_names,

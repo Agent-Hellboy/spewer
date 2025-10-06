@@ -16,7 +16,6 @@ A Python debugging library for detailed code execution tracing. This library pro
 - **Variable value inspection**: View the values of variables at each execution step
 - **Module filtering**: Trace only specific modules or all modules
 - **Context manager support**: Use with `with` statements for automatic cleanup
-- **Configurable tracing**: Control which events to trace (returns, exceptions)
 - **Lightweight**: Minimal overhead and dependencies
 
 Note: Implemented to avoid using pdb manual effort. This is not going to replace pyinstrument, py-spy, and several other performance and profiling debugging tools. This is a simple tool just to counter manual effort of pdb, and it can go deep inside the dependency and print those traces in a basic format which can be done by pyinstrument and other profiling tools as well, but again this is targeting a basic pdb flaw of manual inspection. This is just an inspection tool.
@@ -201,8 +200,8 @@ Install a trace hook which writes detailed logs about code execution.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
-- `trace_returns` (bool): Whether to trace function return events. Default: True.
-- `trace_exceptions` (bool): Whether to trace exception events. Default: True.
+- `trace_returns` (bool): Whether to trace function return events. Default: False.
+- `trace_exceptions` (bool): Whether to trace exception events. Default: False.
 
 #### `unspew()`
 
@@ -220,8 +219,8 @@ Context manager for automatic spew/unspew operations.
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
-- `trace_returns` (bool): Whether to trace function return events. Default: True.
-- `trace_exceptions` (bool): Whether to trace exception events. Default: True.
+- `trace_returns` (bool): Whether to trace function return events. Default: False.
+- `trace_exceptions` (bool): Whether to trace exception events. Default: False.
 
 #### `SpewConfig(trace_names=None, show_values=True, functions_only=False, trace_returns=True, trace_exceptions=True)`
 
@@ -231,8 +230,8 @@ Configuration class for spewer debugging. Provides validation and centralized co
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
 - `show_values` (bool): Whether to show variable values during tracing.
 - `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
-- `trace_returns` (bool): Whether to trace function return events. Default: True.
-- `trace_exceptions` (bool): Whether to trace exception events. Default: True.
+- `trace_returns` (bool): Whether to trace function return events. Default: False.
+- `trace_exceptions` (bool): Whether to trace exception events. Default: False.
 
 #### `TraceHook(config)`
 
