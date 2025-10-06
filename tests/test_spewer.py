@@ -296,6 +296,322 @@ class TestTraceHook:
         # This should handle the unknown file case gracefully
         hook._handle_function_call(frame)
 
+    def test_handle_function_return_with_values(self):
+        """Test _handle_function_return with show_values=True."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        hook._handle_function_return(frame, 42)
+
+    def test_handle_function_return_without_values(self):
+        """Test _handle_function_return with show_values=False."""
+        hook = TraceHook(SpewConfig(show_values=False, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        hook._handle_function_return(frame, 42)
+
+    def test_handle_function_return_with_unknown_file(self):
+        """Test _handle_function_return with unknown file."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {}  # No __file__
+
+        frame = MockFrame()
+        hook._handle_function_return(frame, 42)
+
+    def test_handle_function_return_with_pyc_file(self):
+        """Test _handle_function_return with .pyc file."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.pyc", "__name__": "test"}
+
+        frame = MockFrame()
+        hook._handle_function_return(frame, 42)
+
+    def test_handle_function_exception_with_values(self):
+        """Test _handle_function_exception with show_values=True."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        hook._handle_function_exception(frame, (exc_type, exc_value, exc_tb))
+
+    def test_handle_function_exception_without_values(self):
+        """Test _handle_function_exception with show_values=False."""
+        hook = TraceHook(SpewConfig(show_values=False, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        hook._handle_function_exception(frame, (exc_type, exc_value, exc_tb))
+
+    def test_handle_function_exception_with_unknown_file(self):
+        """Test _handle_function_exception with unknown file."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {}  # No __file__
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        hook._handle_function_exception(frame, (exc_type, exc_value, exc_tb))
+
+    def test_handle_line_return_with_values(self):
+        """Test _handle_line_return with show_values=True."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        hook._handle_line_return(frame, 42)
+
+    def test_handle_line_return_without_values(self):
+        """Test _handle_line_return with show_values=False."""
+        hook = TraceHook(SpewConfig(show_values=False, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        hook._handle_line_return(frame, 42)
+
+    def test_handle_line_return_with_unknown_file(self):
+        """Test _handle_line_return with unknown file."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {}  # No __file__
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 5}
+                )()
+                self.f_lasti = 5
+
+        frame = MockFrame()
+
+        # Mock inspect.getsourcelines to raise OSError
+        original_getsourcelines = inspect.getsourcelines
+        try:
+            inspect.getsourcelines = lambda _: (_ for _ in ()).throw(
+                OSError("File not found")
+            )
+            hook._handle_line_return(frame, 42)
+        finally:
+            inspect.getsourcelines = original_getsourcelines
+
+    def test_handle_line_exception_with_values(self):
+        """Test _handle_line_exception with show_values=True."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        hook._handle_line_exception(frame, (exc_type, exc_value, exc_tb))
+
+    def test_handle_line_exception_without_values(self):
+        """Test _handle_line_exception with show_values=False."""
+        hook = TraceHook(SpewConfig(show_values=False, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        hook._handle_line_exception(frame, (exc_type, exc_value, exc_tb))
+
+    def test_handle_line_exception_with_unknown_file(self):
+        """Test _handle_line_exception with unknown file."""
+        hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {}  # No __file__
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 5}
+                )()
+                self.f_lasti = 5
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+
+        # Mock inspect.getsourcelines to raise OSError
+        original_getsourcelines = inspect.getsourcelines
+        try:
+            inspect.getsourcelines = lambda _: (_ for _ in ()).throw(
+                OSError("File not found")
+            )
+            hook._handle_line_exception(frame, (exc_type, exc_value, exc_tb))
+        finally:
+            inspect.getsourcelines = original_getsourcelines
+
+    def test_trace_hook_call_with_return_event(self):
+        """Test TraceHook __call__ method with return event."""
+        hook = TraceHook(SpewConfig(functions_only=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        result = hook(frame, "return", 42)
+        assert result is hook
+
+    def test_trace_hook_call_with_exception_event(self):
+        """Test TraceHook __call__ method with exception event."""
+        hook = TraceHook(SpewConfig(functions_only=True, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        result = hook(frame, "exception", (exc_type, exc_value, exc_tb))
+        assert result is hook
+
+    def test_trace_hook_call_with_return_event_disabled(self):
+        """Test TraceHook __call__ with return event when trace_returns=False."""
+        hook = TraceHook(SpewConfig(functions_only=True, trace_returns=False))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        result = hook(frame, "return", 42)
+        assert result is hook
+
+    def test_trace_hook_call_with_exception_event_disabled(self):
+        """Test TraceHook __call__ with exception event when trace_exceptions=False."""
+        hook = TraceHook(SpewConfig(functions_only=True, trace_exceptions=False))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        result = hook(frame, "exception", (exc_type, exc_value, exc_tb))
+        assert result is hook
+
+    def test_trace_hook_call_with_line_return_event(self):
+        """Test TraceHook __call__ with return event in line mode."""
+        hook = TraceHook(SpewConfig(functions_only=False, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        result = hook(frame, "return", 42)
+        assert result is hook
+
+    def test_trace_hook_call_with_line_exception_event(self):
+        """Test TraceHook __call__ with exception event in line mode."""
+        hook = TraceHook(SpewConfig(functions_only=False, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        result = hook(frame, "exception", (exc_type, exc_value, exc_tb))
+        assert result is hook
+
 
 class TestSpewContext:
     """Test cases for SpewContext class."""
@@ -354,6 +670,95 @@ class TestIntegration:
         with SpewContext(trace_names=["__main__"], show_values=False):
             result = test_function()
             assert result == "test"
+
+    def test_function_with_return_tracing(self):
+        """Test return event tracing with real function."""
+
+        def calculate(x, y):
+            return x * y + 10
+
+        # Test with return tracing enabled
+        with SpewContext(functions_only=True, trace_returns=True, show_values=False):
+            result = calculate(5, 3)
+            assert result == 25
+
+    def test_function_with_exception_tracing(self):
+        """Test exception event tracing with real function."""
+
+        def risky_function(x, y):
+            if y == 0:
+                msg = "Cannot divide by zero"
+                raise ValueError(msg)
+            return x / y
+
+        # Test with exception tracing enabled
+        with (
+            SpewContext(functions_only=True, trace_exceptions=True, show_values=False),
+            pytest.raises(ValueError),
+        ):
+            risky_function(10, 0)
+
+    def test_nested_functions_with_return_tracing(self):
+        """Test return tracing with nested functions."""
+
+        def outer(x):
+            def inner(y):
+                return y * 2
+
+            return inner(x) + 10
+
+        # Test with return tracing enabled
+        with SpewContext(functions_only=True, trace_returns=True, show_values=False):
+            result = outer(5)
+            assert result == 20
+
+    def test_function_with_both_return_and_exception_tracing(self):
+        """Test both return and exception tracing together."""
+
+        def mixed_function(x):
+            if x < 0:
+                msg = "Negative value"
+                raise ValueError(msg)
+            return x * 2
+
+        # Test successful return
+        with SpewContext(
+            functions_only=True,
+            trace_returns=True,
+            trace_exceptions=True,
+            show_values=False,
+        ):
+            result = mixed_function(5)
+            assert result == 10
+
+            # Test exception
+            with pytest.raises(ValueError):
+                mixed_function(-1)
+
+    def test_function_with_disabled_return_tracing(self):
+        """Test with return tracing disabled."""
+
+        def test_function():
+            return 42
+
+        # Test with return tracing disabled
+        with SpewContext(functions_only=True, trace_returns=False, show_values=False):
+            result = test_function()
+            assert result == 42
+
+    def test_function_with_disabled_exception_tracing(self):
+        """Test with exception tracing disabled."""
+
+        def test_function():
+            msg = "Test error"
+            raise ValueError(msg)
+
+        # Test with exception tracing disabled
+        with (
+            SpewContext(functions_only=True, trace_exceptions=False, show_values=False),
+            pytest.raises(ValueError),
+        ):
+            test_function()
 
 
 if __name__ == "__main__":
