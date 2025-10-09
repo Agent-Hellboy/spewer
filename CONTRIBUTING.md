@@ -80,8 +80,10 @@ Ready to contribute? Here's how to set up `spewer` for local development.
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1.  The pull request should include tests.
-2.  If the pull request adds functionality, the docs should be updated.
+1.  **Install Pre-commit Hooks:** Make sure you have installed the pre-commit hooks by running `pre-commit install` in your local repository. This will automatically run linting and other checks before you create a commit.
+2.  **Include Tests:** If your code adds or changes functionality, it must include tests.
+3.  **Update Documentation:** If you've changed any APIs, please update the documentation.
+4.  **Pass All Checks:** The pull request must pass all checks in the CI pipeline. You can run these checks locally with `tox`.
 
 ## Code Style
 
