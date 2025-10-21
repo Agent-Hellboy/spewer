@@ -192,14 +192,14 @@ __main__:15: my_function()
 
 ### Functions
 
-#### `spew(trace_names=None, show_values=False, functions_only=False, trace_returns=True, trace_exceptions=True)`
+#### `spew(trace_names=None, show_values=False, functions_only=False, trace_returns=False, trace_exceptions=False)`
 
 Install a trace hook which writes detailed logs about code execution.
 
 **Parameters:**
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
-- `show_values` (bool): Whether to show variable values during tracing.
-- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `show_values` (bool): Whether to show variable values during tracing. Default: False.
+- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution. Default: False.
 - `trace_returns` (bool): Whether to trace function return events. Default: False.
 - `trace_exceptions` (bool): Whether to trace exception events. Default: False.
 
@@ -211,25 +211,25 @@ Remove the trace hook installed by `spew()`.
 
 
 
-#### `SpewContext(trace_names=None, show_values=False, functions_only=False, trace_returns=True, trace_exceptions=True)`
+#### `SpewContext(trace_names=None, show_values=False, functions_only=False, trace_returns=False, trace_exceptions=False)`
 
 Context manager for automatic spew/unspew operations.
 
 **Parameters:**
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
-- `show_values` (bool): Whether to show variable values during tracing.
-- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `show_values` (bool): Whether to show variable values during tracing. Default: False.
+- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution. Default: False.
 - `trace_returns` (bool): Whether to trace function return events. Default: False.
 - `trace_exceptions` (bool): Whether to trace exception events. Default: False.
 
-#### `SpewConfig(trace_names=None, show_values=True, functions_only=False, trace_returns=True, trace_exceptions=True)`
+#### `SpewConfig(trace_names=None, show_values=True, functions_only=False, trace_returns=False, trace_exceptions=False)`
 
 Configuration class for spewer debugging. Provides validation and centralized configuration management.
 
 **Parameters:**
 - `trace_names` (Optional[List[str]]): List of module names to trace. If None, traces all modules.
-- `show_values` (bool): Whether to show variable values during tracing.
-- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution.
+- `show_values` (bool): Whether to show variable values during tracing. Default: True.
+- `functions_only` (bool): Whether to trace only function/method calls instead of line-by-line execution. Default: False.
 - `trace_returns` (bool): Whether to trace function return events. Default: False.
 - `trace_exceptions` (bool): Whether to trace exception events. Default: False.
 

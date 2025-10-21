@@ -348,6 +348,22 @@ class TestTraceHook:
         frame = MockFrame()
         hook._handle_function_return(frame, 42)
 
+    def test_handle_function_return_with_pyo_file(self):
+        """Test _handle_function_return with .pyo file.
+
+        This covers the .pyo file handling edge case (line 152 in trace.py).
+        """
+        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
+                self.f_globals = {"__file__": "test.pyo", "__name__": "test"}
+
+        frame = MockFrame()
+        hook._handle_function_return(frame, 42)
+
     def test_handle_function_exception_with_values(self):
         """Test _handle_function_exception with show_values=True."""
         hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
@@ -451,6 +467,24 @@ class TestTraceHook:
         finally:
             inspect.getsourcelines = original_getsourcelines
 
+    def test_handle_line_return_with_pyc_file(self):
+        """Test _handle_line_return with .pyc file.
+
+        This covers the .pyc/.pyo file handling edge case (line 176 in trace.py).
+        """
+        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+                self.f_globals = {"__file__": "test.pyc", "__name__": "test"}
+
+        frame = MockFrame()
+        hook._handle_line_return(frame, 42)
+
     def test_handle_line_exception_with_values(self):
         """Test _handle_line_exception with show_values=True."""
         hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
@@ -514,6 +548,27 @@ class TestTraceHook:
             hook._handle_line_exception(frame, (exc_type, exc_value, exc_tb))
         finally:
             inspect.getsourcelines = original_getsourcelines
+
+    def test_handle_line_exception_with_pyc_file(self):
+        """Test _handle_line_exception with .pyc file.
+
+        This covers the .pyc/.pyo file handling edge case (line 202 in trace.py).
+        """
+        hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 10
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
+                )()
+                self.f_globals = {"__file__": "test.pyc", "__name__": "test"}
+
+        frame = MockFrame()
+        exc_type = ValueError
+        exc_value = ValueError("test error")
+        exc_tb = None
+        hook._handle_line_exception(frame, (exc_type, exc_value, exc_tb))
 
     def test_trace_hook_call_with_return_event(self):
         """Test TraceHook __call__ method with return event."""
@@ -609,6 +664,51 @@ class TestTraceHook:
         exc_type = ValueError
         exc_value = ValueError("test error")
         exc_tb = None
+        result = hook(frame, "exception", (exc_type, exc_value, exc_tb))
+        assert result is hook
+
+    def test_trace_hook_line_mode_return_disabled(self):
+        """Test that return events are ignored in line mode when trace_returns=False.
+
+        This specifically tests the elif branch at line 33 in trace.py.
+        When functions_only=False and trace_returns=False, the return event
+        should be ignored and not call _handle_line_return.
+        """
+        hook = TraceHook(SpewConfig(functions_only=False, trace_returns=False))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 15
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type("MockCode", (), {"co_name": "calc", "co_lasti": 0})()
+
+        frame = MockFrame()
+        # This should return hook without processing the return event
+        result = hook(frame, "return", 42)
+        assert result is hook
+
+    def test_trace_hook_line_mode_exception_disabled(self):
+        """Test that exception events are ignored in line mode when trace_exceptions=False.
+
+        This specifically tests the elif branch at line 35 in trace.py.
+        When functions_only=False and trace_exceptions=False, the exception event
+        should be ignored and not call _handle_line_exception.
+        """
+        hook = TraceHook(SpewConfig(functions_only=False, trace_exceptions=False))
+
+        class MockFrame:
+            def __init__(self):
+                self.f_lineno = 20
+                self.f_globals = {"__file__": "test.py", "__name__": "test"}
+                self.f_code = type(
+                    "MockCode", (), {"co_name": "risky", "co_lasti": 0}
+                )()
+
+        frame = MockFrame()
+        exc_type = ZeroDivisionError
+        exc_value = ZeroDivisionError("division by zero")
+        exc_tb = None
+        # This should return hook without processing the exception event
         result = hook(frame, "exception", (exc_type, exc_value, exc_tb))
         assert result is hook
 
@@ -759,6 +859,41 @@ class TestIntegration:
             pytest.raises(ValueError),
         ):
             test_function()
+
+    def test_line_mode_return_tracing_with_real_code(self):
+        """Test line mode return tracing with actual Python code.
+
+        This validates that return events are properly traced in line mode
+        with real function execution, not just mocks.
+        """
+
+        def simple_calculator(a, b):
+            return a + b
+
+        # Enable line-by-line tracing with return events and values
+        with SpewContext(functions_only=False, trace_returns=True, show_values=True):
+            value = simple_calculator(10, 20)
+            assert value == 30
+
+    def test_line_mode_exception_tracing_with_real_code(self):
+        """Test line mode exception tracing with actual Python code.
+
+        This validates that exception events are properly traced in line mode
+        with real exception raising, not just mocks.
+        """
+
+        def divide_numbers(x, y):
+            if y == 0:
+                msg = "Cannot divide by zero"
+                raise ValueError(msg)
+            return x / y
+
+        # Enable line-by-line tracing with exception events and values
+        with (
+            SpewContext(functions_only=False, trace_exceptions=True, show_values=True),
+            pytest.raises(ValueError),
+        ):
+            divide_numbers(10, 0)
 
 
 if __name__ == "__main__":
