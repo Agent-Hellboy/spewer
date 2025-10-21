@@ -2,7 +2,7 @@
 
 import inspect
 
-import pytest  # type: ignore
+import pytest  # type: ignore[import-untyped]
 
 from spewer import SpewConfig, SpewContext, TraceHook, spew, unspew
 
@@ -262,9 +262,7 @@ class TestTraceHook:
         frame = MockFrame()
 
         # This should handle the unknown file case gracefully
-        # hook._handle_function_call(frame)
         hook._handle_function_call(frame, "call", None)
-
 
 
 class TestSpewContext:
