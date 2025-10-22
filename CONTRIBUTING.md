@@ -44,7 +44,7 @@ Ready to contribute? Here's how to set up `spewer` for local development.
 
 1.  Fork the `spewer` repo on GitHub.
 2.  Clone your fork locally:
-   
+
     ```
     git clone [https://github.com/your_username/spewer.git](https://github.com/your_username/spewer.git)
     ```
