@@ -1,9 +1,12 @@
 import contextlib
 import sys
-from io import StringIO  # Add this
+from io import StringIO
 from pathlib import Path
+from typing import Any, ClassVar
 
 from spewer import spew, unspew
+from spewer.config import SpewConfig
+from spewer.trace import TraceHook
 
 
 def test_builtin_functions_traced(capsys):
@@ -307,4 +310,99 @@ def test_spew_captures_builtin_functions(capsys):
     assert len(output) > 0, "Should have captured some output"
     assert "len" in output or "max" in output or "builtins" in output, (
         f"Should have traced built-in functions. Got: {output}"
+    )
+
+
+def test_c_call_with_arg_name_and_module_extraction(capsys):
+    """Test the c_call event handler that extracts __name__ and __module__ attributes.
+
+    This test specifically validates lines 35-40 in trace.py:
+    if event == "c_call":
+        if arg is not None:
+            func_name = getattr(arg, "__name__", "<unknown>")
+            module = getattr(arg, "__module__", "<unknown>")
+            print(f"{module}: {func_name}()")
+    """
+    spew(functions_only=True)
+
+    # Call various built-in functions that will trigger c_call events
+    len([1, 2, 3])
+    max([5, 2, 8])
+    min([5, 2, 8])
+    abs(-42)
+    sorted([3, 1, 2])
+
+    unspew()
+
+    captured = capsys.readouterr()
+    output = captured.out
+
+    # Verify output contains module: function_name() format
+    assert len(output) > 0, "Should have captured traced output"
+
+    # Check for module: function_name() pattern
+    # Built-in functions typically have "builtins" as module
+    assert "builtins: len()" in output, f"Should trace len() with module. Got: {output}"
+    assert "builtins: max()" in output, f"Should trace max() with module. Got: {output}"
+    assert "builtins: min()" in output, f"Should trace min() with module. Got: {output}"
+
+    # Verify the format is "module: function_name()"
+    lines = output.strip().split("\n")
+    builtin_traces = [line for line in lines if "builtins:" in line]
+    assert len(builtin_traces) > 0, "Should have at least one builtin trace line"
+
+    # Each line should follow the pattern "builtins: function_name()"
+    for line in builtin_traces:
+        assert ": " in line, f"Trace line should contain ': ' separator. Got: {line}"
+        assert "()" in line, f"Trace line should end with '()'. Got: {line}"
+
+
+def test_c_call_with_none_arg(capsys):
+    """Test c_call event handler when arg is None (edge case from line 36)."""
+
+    config = SpewConfig(functions_only=True)
+    trace_hook = TraceHook(config)
+
+    # Create a mock frame
+    class MockFrame:
+        f_lineno: ClassVar[int] = 1
+        f_code: ClassVar[Any] = type("obj", (object,), {"co_name": "test_func"})()
+        f_globals: ClassVar[dict[str, str]] = {"__file__": "test.py"}
+
+    mock_frame = MockFrame()
+
+    # Call with c_call event and None arg (should handle gracefully)
+    trace_hook(mock_frame, "c_call", None)
+
+    captured = capsys.readouterr()
+    # Should not crash and should not print anything when arg is None
+    assert captured.out == "", f"Should not print when arg is None. Got: {captured.out}"
+
+
+def test_c_call_with_missing_attributes(capsys):
+    """Test c_call handler when arg lacks __name__ or __module__ (tests getattr with defaults)."""
+
+    config = SpewConfig(functions_only=True)
+    trace_hook = TraceHook(config)
+
+    # Create a mock frame
+    class MockFrame:
+        f_lineno: ClassVar[int] = 1
+        f_code: ClassVar[Any] = type("obj", (object,), {"co_name": "test_func"})()
+        f_globals: ClassVar[dict[str, str]] = {"__file__": "test.py"}
+
+    # Create a mock callable with missing attributes
+    class MockCallable:
+        pass
+
+    mock_frame = MockFrame()
+    mock_arg = MockCallable()
+
+    # Call with c_call event and object lacking __name__ and __module__
+    trace_hook(mock_frame, "c_call", mock_arg)
+
+    captured = capsys.readouterr()
+    # Should use default values from getattr
+    assert "<unknown>" in captured.out, (
+        f"Should use '<unknown>' default when attributes missing. Got: {captured.out}"
     )

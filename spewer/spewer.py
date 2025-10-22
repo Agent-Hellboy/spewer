@@ -60,4 +60,4 @@ class SpewContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         unspew()
-        return False  # Don't suppress exceptions
+        return False
