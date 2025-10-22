@@ -22,5 +22,6 @@ repos:
       - id: check-toml
       - id: debug-statements
       - id: check-ast
-      - id: check-merge-conflict
       - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
