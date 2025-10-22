@@ -32,7 +32,7 @@ def spew(
 def unspew() -> None:
     """Remove the trace hook installed by spew."""
     sys.settrace(None)
-    sys.setprofile(None)  # Clear both
+    sys.setprofile(None) 
 
 
 class SpewContext:
@@ -60,4 +60,4 @@ class SpewContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         unspew()
-        return False  # Don't suppress exceptions
+        return False  
