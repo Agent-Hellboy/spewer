@@ -21,14 +21,10 @@ class TraceHook:
 
     def __call__(self, frame: Any, event: str, arg: Any) -> TraceHook:
         """Trace hook callback that processes execution events."""
-        if self.config.functions_only:
-            if event == "call":
-                self._handle_function_call(frame)
-            elif event == "return" and self.config.trace_returns:
-                self._handle_function_return(frame, arg)
-            elif event == "exception" and self.config.trace_exceptions:
-                self._handle_function_exception(frame, arg)
-        elif event == "line":
+
+        if self.config.functions_only and event in ("call", "c_call"):
+            self._handle_function_call(frame, event, arg)
+        elif not self.config.functions_only and event == "line":
             self._handle_line_execution(frame)
         elif event == "return" and self.config.trace_returns:
             self._handle_line_return(frame, arg)
@@ -37,8 +33,17 @@ class TraceHook:
 
         return self
 
-    def _handle_function_call(self, frame: Any) -> None:
-        """Handle function call events."""
+    def _handle_function_call(self, frame: Any, event: str, arg: Any) -> None:
+        """Handle function call events including built-in functions."""
+        # Handle C/built-in function calls
+        if event == "c_call":
+            if arg is not None:
+                func_name = getattr(arg, "__name__", "<unknown>")
+                module = getattr(arg, "__module__", "<unknown>")
+                print(f"{module}: {func_name}()")
+            return
+
+        # Handle regular Python function calls
         lineno = frame.f_lineno
         func_name = frame.f_code.co_name
 

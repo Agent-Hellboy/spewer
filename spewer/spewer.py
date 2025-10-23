@@ -24,12 +24,19 @@ def spew(
         trace_returns=trace_returns,
         trace_exceptions=trace_exceptions,
     )
-    sys.settrace(TraceHook(config))
+    hook = TraceHook(config)
+
+    # Use setprofile for functions_only mode to capture built-ins
+    if functions_only:
+        sys.setprofile(hook)
+    else:
+        sys.settrace(hook)
 
 
 def unspew() -> None:
     """Remove the trace hook installed by spew."""
     sys.settrace(None)
+    sys.setprofile(None)
 
 
 class SpewContext:
@@ -63,3 +70,4 @@ class SpewContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         unspew()
+        return False
