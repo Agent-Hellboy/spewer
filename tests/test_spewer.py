@@ -16,6 +16,10 @@ class TestSpewConfig:
         assert config.trace_names is None
         assert config.show_values is True
         assert config.functions_only is False
+        assert (
+            config.trace_returns is False
+        )  # <-- Added this line from test_spew_config_default_values(self)
+        assert config.trace_exceptions is False  # <-- Added this line
 
     def test_spew_config_with_trace_names(self):
         """Test SpewConfig with specific trace names."""
@@ -64,12 +68,6 @@ class TestSpewConfig:
         """Test SpewConfig with invalid trace_exceptions."""
         with pytest.raises(TypeError):
             SpewConfig(trace_exceptions="invalid")
-
-    def test_spew_config_default_values(self):
-        """Test SpewConfig default values for new options."""
-        config = SpewConfig()
-        assert config.trace_returns is False
-        assert config.trace_exceptions is False
 
 
 class TestTraceHook:
@@ -239,32 +237,16 @@ class TestTraceHook:
         finally:
             inspect.getsourcelines = original_getsourcelines
 
-    def test_tracehook_with_pyc_file(self):
-        """Test TraceHook with a .pyc file."""
+    @pytest.mark.parametrize("file_name", ["test.pyc", "test.pyo"])
+    def test_tracehook_with_compiled_files(self, file_name):
+        """Test TraceHook with compiled .pyc and .pyo files."""
         hook = TraceHook(SpewConfig(show_values=False))
 
-        # Create a mock frame with a .pyc file
+        # Create a mock frame with a compiled file
         class MockFrame:
             def __init__(self):
                 self.f_lineno = 10
-                self.f_globals = {"__file__": "test.pyc", "__name__": "test"}
-                self.f_locals = {}
-                self.f_code = type(
-                    "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
-                )()
-
-        frame = MockFrame()
-        hook._handle_line_execution(frame)
-
-    def test_tracehook_with_pyo_file(self):
-        """Test TraceHook with a .pyo file."""
-        hook = TraceHook(SpewConfig(show_values=False))
-
-        # Create a mock frame with a .pyo file
-        class MockFrame:
-            def __init__(self):
-                self.f_lineno = 10
-                self.f_globals = {"__file__": "test.pyo", "__name__": "test"}
+                self.f_globals = {"__file__": file_name, "__name__": "test"}
                 self.f_locals = {}
                 self.f_code = type(
                     "MockCode", (), {"co_name": "test_func", "co_lasti": 0}
@@ -335,31 +317,16 @@ class TestTraceHook:
         frame = MockFrame()
         hook._handle_function_return(frame, 42)
 
-    def test_handle_function_return_with_pyc_file(self):
-        """Test _handle_function_return with .pyc file."""
+    @pytest.mark.parametrize("file_name", ["test.pyc", "test.pyo"])
+    def test_handle_function_return_with_compiled_files(self, file_name):
+        """Test _handle_function_return with compiled .pyc and .pyo files."""
         hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
 
         class MockFrame:
             def __init__(self):
                 self.f_lineno = 10
                 self.f_code = type("MockCode", (), {"co_name": "test_func"})()
-                self.f_globals = {"__file__": "test.pyc", "__name__": "test"}
-
-        frame = MockFrame()
-        hook._handle_function_return(frame, 42)
-
-    def test_handle_function_return_with_pyo_file(self):
-        """Test _handle_function_return with .pyo file.
-
-        This covers the .pyo file handling edge case (line 152 in trace.py).
-        """
-        hook = TraceHook(SpewConfig(show_values=True, trace_returns=True))
-
-        class MockFrame:
-            def __init__(self):
-                self.f_lineno = 10
-                self.f_code = type("MockCode", (), {"co_name": "test_func"})()
-                self.f_globals = {"__file__": "test.pyo", "__name__": "test"}
+                self.f_globals = {"__file__": file_name, "__name__": "test"}
 
         frame = MockFrame()
         hook._handle_function_return(frame, 42)
@@ -738,14 +705,6 @@ class TestSpewContext:
 
 class TestIntegration:
     """Integration tests for the spewer library."""
-
-    def test_basic_tracing(self):
-        """Test basic tracing functionality."""
-
-        def test_function():
-            x = 10
-            y = 20
-            return x + y
 
     def test_basic_tracing_with_context_manager(self):
         """Test basic tracing functionality with context manager."""
