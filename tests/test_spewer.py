@@ -16,8 +16,10 @@ class TestSpewConfig:
         assert config.trace_names is None
         assert config.show_values is True
         assert config.functions_only is False
-        assert config.trace_returns is False    # <-- Added this line from test_spew_config_default_values(self)
-        assert config.trace_exceptions is False # <-- Added this line
+        assert (
+            config.trace_returns is False
+        )  # <-- Added this line from test_spew_config_default_values(self)
+        assert config.trace_exceptions is False  # <-- Added this line
 
     def test_spew_config_with_trace_names(self):
         """Test SpewConfig with specific trace names."""
@@ -66,6 +68,7 @@ class TestSpewConfig:
         """Test SpewConfig with invalid trace_exceptions."""
         with pytest.raises(TypeError):
             SpewConfig(trace_exceptions="invalid")
+
 
 class TestTraceHook:
     """Test cases for the TraceHook class."""
@@ -327,7 +330,7 @@ class TestTraceHook:
 
         frame = MockFrame()
         hook._handle_function_return(frame, 42)
-        
+
     def test_handle_function_exception_with_values(self):
         """Test _handle_function_exception with show_values=True."""
         hook = TraceHook(SpewConfig(show_values=True, trace_exceptions=True))
