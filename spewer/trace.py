@@ -26,6 +26,10 @@ class TraceHook:
             self._handle_function_call(frame, event, arg)
         elif not self.config.functions_only and event == "line":
             self._handle_line_execution(frame)
+        elif event == "return" and self.config.trace_returns:
+            self._handle_line_return(frame, arg)
+        elif event == "exception" and self.config.trace_exceptions:
+            self._handle_line_exception(frame, arg)
 
         return self
 
@@ -118,3 +122,105 @@ class TraceHook:
 
         if details:
             print(f"\t{' '.join(details)}")
+
+    def _handle_function_return(self, frame: Any, arg: Any) -> None:
+        """Handle function return events."""
+        lineno = frame.f_lineno
+        func_name = frame.f_code.co_name
+
+        # Get filename and handle compiled files
+        if "__file__" in frame.f_globals:
+            filename = frame.f_globals["__file__"]
+            if filename.endswith((".pyc", ".pyo")):
+                filename = filename[:-1]
+            name = frame.f_globals["__name__"]
+        else:
+            name = "[unknown]"
+            filename = "[unknown]"
+
+        # Check if we should trace this module
+        if self.config.trace_names is None or name in self.config.trace_names:
+            if self.config.show_values:
+                print(f"{name}:{lineno}: {func_name}() -> {arg!r}")
+            else:
+                print(f"{name}:{lineno}: {func_name}() -> <return>")
+
+    def _handle_function_exception(self, frame: Any, arg: Any) -> None:
+        """Handle function exception events."""
+        lineno = frame.f_lineno
+        func_name = frame.f_code.co_name
+
+        # Get filename and handle compiled files
+        if "__file__" in frame.f_globals:
+            filename = frame.f_globals["__file__"]
+            if filename.endswith((".pyc", ".pyo")):
+                filename = filename[:-1]
+            name = frame.f_globals["__name__"]
+        else:
+            name = "[unknown]"
+            filename = "[unknown]"
+
+        # Check if we should trace this module
+        if self.config.trace_names is None or name in self.config.trace_names:
+            if self.config.show_values:
+                exc_type, exc_value, _ = arg
+                print(
+                    f"{name}:{lineno}: {func_name}() -> {exc_type.__name__}({exc_value!r})"
+                )
+            else:
+                print(f"{name}:{lineno}: {func_name}() -> <exception>")
+
+    def _handle_line_return(self, frame: Any, arg: Any) -> None:
+        """Handle line return events."""
+        lineno = frame.f_lineno
+
+        # Get filename and handle compiled files
+        if "__file__" in frame.f_globals:
+            filename = frame.f_globals["__file__"]
+            if filename.endswith((".pyc", ".pyo")):
+                filename = filename[:-1]
+            name = frame.f_globals["__name__"]
+            line = linecache.getline(filename, lineno)
+        else:
+            name = "[unknown]"
+            try:
+                src = inspect.getsourcelines(frame)
+                line = src[lineno]
+            except OSError:
+                line = f"Unknown code named [{frame.f_code.co_name}]. VM instruction #{frame.f_lasti}"
+
+        # Check if we should trace this module
+        if self.config.trace_names is None or name in self.config.trace_names:
+            if self.config.show_values:
+                print(f"{name}:{lineno}: {line.rstrip()} -> {arg!r}")
+            else:
+                print(f"{name}:{lineno}: {line.rstrip()} -> <return>")
+
+    def _handle_line_exception(self, frame: Any, arg: Any) -> None:
+        """Handle line exception events."""
+        lineno = frame.f_lineno
+
+        # Get filename and handle compiled files
+        if "__file__" in frame.f_globals:
+            filename = frame.f_globals["__file__"]
+            if filename.endswith((".pyc", ".pyo")):
+                filename = filename[:-1]
+            name = frame.f_globals["__name__"]
+            line = linecache.getline(filename, lineno)
+        else:
+            name = "[unknown]"
+            try:
+                src = inspect.getsourcelines(frame)
+                line = src[lineno]
+            except OSError:
+                line = f"Unknown code named [{frame.f_code.co_name}]. VM instruction #{frame.f_lasti}"
+
+        # Check if we should trace this module
+        if self.config.trace_names is None or name in self.config.trace_names:
+            if self.config.show_values:
+                exc_type, exc_value, _ = arg
+                print(
+                    f"{name}:{lineno}: {line.rstrip()} -> {exc_type.__name__}({exc_value!r})"
+                )
+            else:
+                print(f"{name}:{lineno}: {line.rstrip()} -> <exception>")

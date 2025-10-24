@@ -13,6 +13,8 @@ class SpewConfig:
     trace_names: Optional[list[str]] = None
     show_values: bool = True
     functions_only: bool = False
+    trace_returns: bool = False
+    trace_exceptions: bool = False
 
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -26,4 +28,12 @@ class SpewConfig:
 
         if not isinstance(self.functions_only, bool):
             msg = "functions_only must be a boolean"
+            raise TypeError(msg)
+
+        if not isinstance(self.trace_returns, bool):
+            msg = "trace_returns must be a boolean"
+            raise TypeError(msg)
+
+        if not isinstance(self.trace_exceptions, bool):
+            msg = "trace_exceptions must be a boolean"
             raise TypeError(msg)

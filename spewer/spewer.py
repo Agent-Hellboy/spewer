@@ -13,12 +13,16 @@ def spew(
     trace_names: Optional[list[str]] = None,
     show_values: bool = False,
     functions_only: bool = False,
+    trace_returns: bool = False,
+    trace_exceptions: bool = False,
 ) -> None:
     """Install a trace hook for detailed code execution logging."""
     config = SpewConfig(
         trace_names=trace_names,
         show_values=show_values,
         functions_only=functions_only,
+        trace_returns=trace_returns,
+        trace_exceptions=trace_exceptions,
     )
     hook = TraceHook(config)
 
@@ -43,11 +47,15 @@ class SpewContext:
         trace_names: Optional[list[str]] = None,
         show_values: bool = False,
         functions_only: bool = False,
+        trace_returns: bool = False,
+        trace_exceptions: bool = False,
     ):
         self.config = SpewConfig(
             trace_names=trace_names,
             show_values=show_values,
             functions_only=functions_only,
+            trace_returns=trace_returns,
+            trace_exceptions=trace_exceptions,
         )
 
     def __enter__(self):
@@ -55,6 +63,8 @@ class SpewContext:
             self.config.trace_names,
             self.config.show_values,
             self.config.functions_only,
+            self.config.trace_returns,
+            self.config.trace_exceptions,
         )
         return self
 
